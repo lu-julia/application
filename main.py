@@ -38,7 +38,7 @@ else:
 
 # IMPORT ET EXPLORATION DONNEES --------------------------------
 
-TrainingData = pd.read_csv("data.csv")
+TrainingData = pd.read_csv("data/raw/data.csv")
 
 
 # Usage example:
