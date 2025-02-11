@@ -17,9 +17,12 @@ from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import confusion_matrix
 
+
+# ENVIRONMENT CONFIGURATION ---------------------------
+
 load_dotenv()
 
-parser = argparse.ArgumentParser(description="Entraînement modèle Titanic")
+parser = argparse.ArgumentParser(description="Paramètres du random forest")
 parser.add_argument(
     "--n_trees", type=int, default=20, help="Nombre d'arbres"
 )
@@ -27,10 +30,9 @@ args = parser.parse_args()
 
 n_trees = args.n_trees
 print(f"Valeur de n_trees = {n_trees}")
+JETON_API = os.environ["JETON_API"]
 MAX_DEPTH = None
 MAX_FEATURES = "sqrt"
-
-JETON_API = os.environ["JETON_API"]
 
 if JETON_API.startswith("$"):
     print("API token has been configured properly")
@@ -38,7 +40,7 @@ else:
     print("API token has not been configured")
 
 
-# IMPORT ET EXPLORATION DONNEES ---------------------------
+# IMPORT ET EXPLORATION DONNEES --------------------------------
 
 TrainingData = pd.read_csv("data.csv")
 TrainingData.head()
@@ -47,11 +49,7 @@ TrainingData["Ticket"].str.split("/").str.len()
 TrainingData["Name"].str.split(",").str.len()
 TrainingData.isnull().sum()
 
-
-## Un peu d'exploration et de feature engineering
-
-### Statut socioéconomique
-
+# Statut socioéconomique
 fig, axes = plt.subplots(
     1,2, figsize=(12, 6)
 )  # layout matplotlib 1 ligne 2 colonnes taile 16*8
@@ -63,18 +61,33 @@ fig2_pclass = sns.barplot(
 ).set_title("survie des Pclass")
 
 
-### Age
-
+# Age
 sns.histplot(data= TrainingData, x="Age", bins=15, kde=False).set_title(
     "Distribution de l'âge"
 )
 plt.show()
 
-## Encoder les données imputées ou transformées.
 
+# SPLIT TRAIN/TEST --------------------------------
+
+# On _split_ notre _dataset_ d'apprentisage
+# Prenons arbitrairement 10% du dataset en test et 90% pour l'apprentissage.
+
+y = TrainingData["Survived"]
+X = TrainingData.drop("Survived", axis="columns")
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
+pd.concat([X_train, y_train]).to_csv("train.csv")
+pd.concat([X_test, y_test]).to_csv("test.csv")
+
+
+# PIPELINE ----------------------------
+
+# Définition des variables
 numeric_features = ["Age", "Fare"]
 categorical_features = ["Embarked", "Sex"]
 
+# Variables numériques
 numeric_transformer = Pipeline(
     steps=[
         ("imputer", SimpleImputer(strategy="median")),
@@ -82,6 +95,7 @@ numeric_transformer = Pipeline(
     ]
 )
 
+# Variables catégorielles
 categorical_transformer = Pipeline(
     steps=[
         ("imputer", SimpleImputer(strategy="most_frequent")),
@@ -89,7 +103,7 @@ categorical_transformer = Pipeline(
     ]
 )
 
-
+# Preprocessing
 preprocessor = ColumnTransformer(
     transformers=[
         ("Preprocessing numerical", numeric_transformer, numeric_features),
@@ -101,6 +115,7 @@ preprocessor = ColumnTransformer(
     ]
 )
 
+# Pipeline
 pipe = Pipeline(
     [
         ("preprocessor", preprocessor),
@@ -109,28 +124,12 @@ pipe = Pipeline(
 )
 
 
+# ESTIMATION ET EVALUATION ----------------------
 
-# splitting samples
-y = TrainingData["Survived"]
-X = TrainingData.drop("Survived", axis="columns")
-
-# On _split_ notre _dataset_ d'apprentisage pour faire de la validation croisée une partie pour apprendre une partie pour regarder le score.
-# Prenons arbitrairement 10% du dataset en test et 90% pour l'apprentissage.
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
-pd.concat([X_train, y_train]).to_csv("train.csv")
-pd.concat([X_test, y_test]).to_csv("test.csv")
-
-
-# Random Forest
-
-# Ici demandons d'avoir 20 arbres
 pipe.fit(X_train, y_train)
 
-
-# calculons le score sur le dataset d'apprentissage et sur le dataset de test (10% du dataset d'apprentissage mis de côté)
-# le score étant le nombre de bonne prédiction
+# score
 rdmf_score = pipe.score(X_test, y_test)
-rdmf_score_tr = pipe.score(X_train, y_train)
 print(f"{rdmf_score:.1%} de bonnes réponses sur les données de test pour validation")
 
 print(20 * "-")
