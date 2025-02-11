@@ -1,8 +1,14 @@
+"""
+Prédiction de la survie d'un individu sur le Titanic
+"""
+
+import os
 import argparse
+from dotenv import load_dotenv
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
@@ -11,21 +17,29 @@ from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import confusion_matrix
 
+load_dotenv()
 
 parser = argparse.ArgumentParser(description="Entraînement modèle Titanic")
 parser.add_argument(
-    "--n_trees", type=int, default=20, help="Nomrbe d'arbres"
+    "--n_trees", type=int, default=20, help="Nombre d'arbres"
 )
 args = parser.parse_args()
 
 n_trees = args.n_trees
+print(f"Valeur de n_trees = {n_trees}")
 MAX_DEPTH = None
 MAX_FEATURES = "sqrt"
-JETONAPI = "$trotskitueleski1917"
 
-print(f"Valeur de n_trees = {n_trees}")
+JETON_API = os.environ["JETON_API"]
 
-## IMPORT 
+if JETON_API.startswith("$"):
+    print("API token has been configured properly")
+else:
+    print("API token has not been configured")
+
+
+# IMPORT ET EXPLORATION DONNEES ---------------------------
+
 TrainingData = pd.read_csv("data.csv")
 TrainingData.head()
 
