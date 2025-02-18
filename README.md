@@ -1,10 +1,20 @@
-# Probabilité de survie sur le Titanic
+# Titre de mon projet
 
-Pour pouvoir utiliser ce projet, il 
-est recommandé de créer un fichier `config.yaml`
-ayant la structure suivante:
+## Utiliser ce projet
 
-```yaml
-jeton_api: ####
-data_path: ####
-```
+- Initialiser les dépendances :
+  ```
+  pip install -r requirements.txt
+  ```
+
+- Spécifier les variables d'environnement suivantes :
+  ```
+  JETON_API=changeme
+  ```
+- Exécuter le projet :
+  ```
+  python titanic.py n_trees 30
+  ```
+
+
+
