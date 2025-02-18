@@ -23,11 +23,13 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+URL_RAW = "https://minio.lab.sspcloud.fr/julialu/ensae-reproductibilite/data/raw/data.csv"
+
 n_trees = args.n_trees
 jeton_api = os.environ.get("JETON_API", "")
-data_path = os.environ.get("data_path", "data/raw/data.csv")
-data_train_path = os.environ.get("train_path", "data/derived/train.csv")
-data_test_path = os.environ.get("test_path", "data/derived/test.csv")
+data_path = os.environ.get("data_path", URL_RAW)
+data_train_path = os.environ.get("train_path", "data/derived/train.parquet")
+data_test_path = os.environ.get("test_path", "data/derived/test.parquet")
 MAX_DEPTH = None
 MAX_FEATURES = "sqrt"
 
