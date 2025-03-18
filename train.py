@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 import argparse
 from loguru import logger
+from joblib import dump
 
 import pathlib
 import pandas as pd
@@ -26,7 +27,7 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-URL_RAW = "https://minio.lab.sspcloud.fr/lgaliana/ensae-reproductibilite/data/raw/data.csv"
+URL_RAW = "https://minio.lab.sspcloud.fr/julialu/ensae-reproductibilite/data/raw/data.csv"
 
 n_trees = args.n_trees
 jeton_api = os.environ.get("JETON_API", "")
@@ -55,9 +56,8 @@ X = TrainingData.drop("Survived", axis="columns")
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.1
 )
-pd.concat([X_train, y_train], axis = 1).to_parquet(data_train_path)
-pd.concat([X_test, y_test], axis = 1).to_parquet(data_test_path)
-
+pd.concat([X_train, y_train], axis=1).to_parquet(data_train_path)
+pd.concat([X_test, y_test], axis=1).to_parquet(data_test_path)
 
 
 # PIPELINE ----------------------------
@@ -73,6 +73,8 @@ pipe = create_pipeline(
 
 pipe.fit(X_train, y_train)
 
+with open("model.joblib", "wb") as f:
+    dump(pipe, f)
 
 # Evaluate the model
 score, matrix = evaluate_model(pipe, X_test, y_test)
